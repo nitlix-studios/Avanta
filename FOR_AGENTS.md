@@ -14,6 +14,7 @@ src/
     ├── GitHubProvider.ts          # GitHub OAuth2 (App or OAuth App)
     ├── GoogleProvider.ts          # Google OAuth2 (OpenID Connect)
     ├── MicrosoftProvider.ts       # Microsoft Identity Platform v2.0
+    ├── NitlixProvider.ts          # Nitlix ticket sign-in (no tokens)
     └── TwitchProvider.ts          # Twitch OAuth2 (Helix API)
 ```
 
@@ -170,6 +171,20 @@ Actions auto-refresh tokens before making requests and return `{ tokenStore, dat
 - The `DataForScopes` type is `BaseUserData & UnionToIntersection<...> & { tokenStore }`.
 - API calls require both `Authorization: Bearer` and `Client-Id` headers.
 - The user data endpoint returns `{ data: [...] }` — the provider reads `data[0]`.
+
+### NitlixProvider
+
+**Endpoints** (relative to `authServerUrl`, default `https://nitlix.com`):
+- Authorize: `/auth`
+- Redeem ticket: `POST /api/onelogin/peek`
+
+**Special considerations:**
+- **Not OAuth2.** No token exchange, no refresh, no `TokenStore`. The class deliberately breaks the common provider shape: it only has `getOAuthUrl(state)`, `getTicket(callback)` and `getData({ ticket, state })`.
+- `state` is required. The auth server hashes it into the ticket and rejects the redeem (`Invalid state`) unless the same value is sent back.
+- The callback carries `?ticket=<id>.<code>` (read `code` as a fallback). Tickets are single-use — deleted on the first successful peek — and expire after 10 minutes.
+- `scope` is sent as a JSON array, which every version of the auth server accepts.
+- The peek body is `{ ticket, state, clientId, clientSecret }` as JSON and the response is `{ ok, data }`; on `ok: false`, `data` is the reason string, which is what gets thrown.
+- There is no base profile: `DataForScopes` is purely the intersection of the requested scopes (`id`, `profile`, `email`, `groups`).
 
 ## How to add a new provider
 

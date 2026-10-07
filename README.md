@@ -35,7 +35,7 @@ Avanta is a good fit.
 
 It gives you:
 
-- **5 prebuilt providers**: Discord, GitHub, Google, Microsoft, Twitch, and more to come
+- **6 prebuilt providers**: Discord, GitHub, Google, Microsoft, Nitlix, Twitch, and more to come
 - **Scope-level typing**: the data you get back is typed to the exact scopes you requested
 - **Token management**: `TokenStore` with built-in refresh, serialization, and expiry tracking
 - **Scope-dependent actions**: Discord's `guilds.join` and `guilds.members.read` are only available when you request those scopes
@@ -49,6 +49,7 @@ It gives you:
     - [Google](#google)
     - [Microsoft](#microsoft)
     - [Twitch](#twitch)
+    - [Nitlix](#nitlix)
 - [TokenStore](#tokenstore)
 - [Common API](#common-api)
 - [Scope-dependent actions (Discord)](#scope-dependent-actions-discord)
@@ -256,6 +257,38 @@ Twitch always returns base profile data regardless of scopes:
 | ----------------- | ------------- |
 | `user:read:email` | `email`       |
 
+### Nitlix
+
+Nitlix sign-in is a ticket flow rather than full OAuth2: there are no access or refresh tokens and no `TokenStore`. The user comes back with a one-time `ticket`, which you redeem for their data in a single server-to-server request.
+
+```ts
+const nitlix = new Avanta.NitlixProvider({
+    clientId: process.env.NITLIX_CLIENT_ID!,
+    clientSecret: process.env.NITLIX_CLIENT_SECRET!,
+    redirectUri: "https://example.com/auth/callback",
+    scopes: ["id", "profile"],
+});
+
+// 1) Redirect. `state` is required — keep it (e.g. in a cookie) for the callback.
+const url = nitlix.getOAuthUrl(state);
+
+// 2) Callback. Redeem the ticket against the same state.
+const ticket = nitlix.getTicket(request.url);
+const data = await nitlix.getData({ ticket, state });
+// data.id, data.name, data.avatar, data.createdAt
+```
+
+| Scope     | Fields added                                            |
+| --------- | ------------------------------------------------------- |
+| `id`      | `id`                                                    |
+| `profile` | `name`, `avatar` (`string \| null`), `createdAt` (ISO)  |
+| `email`   | `email` (`string \| null`)                              |
+| `groups`  | `groups` (`{ id, name }[]`)                             |
+
+Tickets are single-use and expire after 10 minutes — call `getData()` exactly once per callback (watch out for React StrictMode double-invoking effects). It throws with the auth server's reason (`Invalid ticket`, `Invalid state`, ...) on failure.
+
+Pass `authServerUrl` to the constructor to point at a different Nitlix instance (defaults to `https://nitlix.com`).
+
 ## TokenStore
 
 `TokenStore` is a small utility class that holds OAuth tokens and manages serialization.
@@ -432,6 +465,7 @@ import {
     GitHubProvider,
     GoogleProvider,
     MicrosoftProvider,
+    NitlixProvider,
     TwitchProvider,
 } from "avanta";
 ```
