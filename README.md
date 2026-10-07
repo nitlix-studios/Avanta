@@ -6,8 +6,8 @@
 
   <h3>OAuth that does more with less.<br />Scope-aware providers with fully typed user data, zero config.</h3>
 
-  <a href="https://github.com/nitlix-hq/Avanta">
-    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/nitlix-hq/Avanta?style=social">
+  <a href="https://github.com/nitlix-studios/Avanta">
+    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/nitlix-studios/Avanta?style=social">
   </a>
 
   <a href="https://www.npmjs.com/package/avanta">

@@ -4,7 +4,7 @@
     "author": "nitlix-hq",
     "repository": {
         "type": "git",
-        "url": "https://github.com/nitlix-hq/Avanta"
+        "url": "https://github.com/nitlix-studios/Avanta"
     },
     "main": "./dist/exports.js",
     "module": "./dist/exports.js",
@@ -24,7 +24,7 @@
     "files": [
         "dist"
     ],
-    "homepage": "https://github.com/nitlix-hq/Avanta",
+    "homepage": "https://github.com/nitlix-studios/Avanta",
     "license": "MIT",
     "type": "module",
     "types": "./dist/exports.d.ts"
